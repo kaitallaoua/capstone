@@ -5,36 +5,11 @@ Karim Ait-Allaoua
 */
 #include "util.h"
 #include "stm32f10x.h"
-void control_green_onboard_led(unsigned int on_or_off);
-unsigned int read_on_board_blue_switch(void);
-void delay_for(unsigned int wait_for);
+#include "FreeRTOS.h"
+#include "task.h"
 
-/* TODO: simplify this code like the other */
-void control_green_onboard_led(unsigned int on_or_off)
-{
-	/* off == 0, on == 1 */
-	if (on_or_off == 0)
-	{
-		GPIOA->ODR &= ~GPIO_ODR_ODR5;
-	}
-	else if (on_or_off == 1)
-	{
-		GPIOA->ODR |= GPIO_ODR_ODR5;
-	}
-}
 
-void delay_for(unsigned int wait_for)
-{
-	for (unsigned int i = 0; i < wait_for; i++)
-	{
-	}
-}
 
-unsigned int read_on_board_blue_switch(void)
-{
-	/* 0 if pushed, 1 if not */
-	return (GPIOC->IDR & GPIO_IDR_IDR13) >> 12;
-}
 
 int main(void) {
 	
@@ -42,12 +17,15 @@ int main(void) {
 	clockInit();
 	led_IO_init();
 	
-	    while(1){
-			GPIOA->BSRR = NUC_GREEN_ON;
-			delay_for(900000);
-	    GPIOA->BSRR = NUC_GREEN_OFF;
-			delay_for(1800000);
-			}
+		if (xTaskCreate(blink_forever, "blink_forever", configMINIMAL_STACK_SIZE,
+                    NULL, tskIDLE_PRIORITY + 1,
+                    NULL) == errCOULD_NOT_ALLOCATE_REQUIRED_MEMORY) {
+											
+				// do something, we failed to start up
+    }
+    vTaskStartScheduler();
+	
+
 	
 }
 

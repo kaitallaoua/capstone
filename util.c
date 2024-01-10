@@ -3,15 +3,6 @@
  #include "util.h"
  
 
-//**************************** Utility ************************************************************
-// delay = 1800 is approximately 1 ms @ SYSCLK = 24 MHz (ymmv)
-
-void delay(uint32_t delay)
-{
-  	 while (delay--)
-	{
-		}
-}
 
 //**************************** Clock Configuration ************************************************************
 void clockInit(void)
@@ -107,6 +98,8 @@ void clockInit(void)
 
 void led_IO_init (void)
 {
+	
+	
     //Enable Port A and Port C clocks
     
     RCC->APB2ENR |=  RCC_APB2ENR_IOPCEN | RCC_APB2ENR_IOPAEN ;
@@ -120,26 +113,43 @@ void led_IO_init (void)
 	
 }	
 	
-void sw2led(void)
-{
-	
-  	// Read the USER button and control the GREEN LED pattern according to its state
-  
-	
-	if ((GPIOC->IDR & GPIO_IDR_IDR13) == 0)
-		
-  {
-     GPIOA->BSRR = NUC_GREEN_ON;
-  }
-  else
-  {
-     GPIOA->BSRR = NUC_GREEN_OFF;
-  }
-}
-	
-	
-void led_flash(void)
-{			
 
+
+void control_green_onboard_led(unsigned int on_or_off)
+{
+	/* off == 0, on == 1 */
+	if (on_or_off == 0)
+	{
+		GPIOA->ODR &= ~GPIO_ODR_ODR5;
+	}
+	else if (on_or_off == 1)
+	{
+		GPIOA->ODR |= GPIO_ODR_ODR5;
+	}
+}
+
+
+
+void delay_for(unsigned int wait_for)
+{
+	for (unsigned int i = 0; i < wait_for; i++)
+	{
+		// keep this here, for compliler optimization to not remove this loop
+		__ASM("nop");
+	}
+}
+
+
+
+
+void blink_forever(void * params) {
+	
+	
+		 while(1){
+			control_green_onboard_led(0);
+			delay_for(4000000);
+	    control_green_onboard_led(1);
+			delay_for(4000000);
+			}
 }
 
